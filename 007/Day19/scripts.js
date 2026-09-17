@@ -32,7 +32,10 @@ function takePhoto(){
     const link = document.createElement('a');
     link.href=data;
     link.setAttribute('download','capturedimg');
-    link.innerHTML = `<img src=${data} alt='capturedimg' />`;
+    const image = document.createElement('img');
+    image.src = data;
+    image.alt = 'capturedimg';
+    link.appendChild(image);
     strip.insertBefore(link,strip.firstChild);
 
 }

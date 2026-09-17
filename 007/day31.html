@@ -241,8 +241,17 @@
         const addTask = document.querySelector('#input-task  .form-addTask');
         const incUl = document.querySelector('#incompleteTask #task-list');
         const cUl = document.querySelector('#completeTask #task-list');
-        const incompleteItemList = JSON.parse(localStorage.getItem('incI')) || [];
-        const completeItemList = JSON.parse(localStorage.getItem('cI')) || [];
+        function loadItems(key) {
+            try {
+                const storedItems = JSON.parse(localStorage.getItem(key));
+                return Array.isArray(storedItems) ? storedItems : [];
+            } catch (error) {
+                localStorage.removeItem(key);
+                return [];
+            }
+        }
+        const incompleteItemList = loadItems('incI');
+        const completeItemList = loadItems('cI');
         const incCheckBox = document.querySelectorAll
         let incItemNo = 0;
         function saveonLocalStorage(class_key,class_value){
@@ -250,23 +259,31 @@
         }
         function addTaskToIncList(incUl,itemsList=[]){
             
-            incUl.innerHTML = itemsList.map((item,i)=>{
-                return  `
-                    <li>
-                        <input type="checkbox" data-index=${i} ${item.isdone? 'checked':''} />
-                       <span>${item.text}</span>
-                    </li>
-                    `;
-            }).join('');
+            incUl.replaceChildren(...itemsList.map((item,i)=>{
+                const listItem = document.createElement('li');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.dataset.index = i;
+                checkbox.checked = Boolean(item.isdone);
+                const text = document.createElement('span');
+                text.textContent = String(item.text ?? '');
+                listItem.append(checkbox, text);
+                return listItem;
+            }));
             
         }
         function addTaskToClist(cUl,itemsList=[]){
-            cUl.innerHTML=itemsList.map((item,i)=>{
-                return `<li>
-                        <span>${item.text}</span>
-                        <input type="button"  value="DELETE" data-index="${i}">
-                    </li>`;
-            }).join('');
+            cUl.replaceChildren(...itemsList.map((item,i)=>{
+                const listItem = document.createElement('li');
+                const text = document.createElement('span');
+                text.textContent = String(item.text ?? '');
+                const deleteButton = document.createElement('input');
+                deleteButton.type = 'button';
+                deleteButton.value = 'DELETE';
+                deleteButton.dataset.index = i;
+                listItem.append(text, deleteButton);
+                return listItem;
+            }));
         }
         function addtasktoList(e){
           e.preventDefault();

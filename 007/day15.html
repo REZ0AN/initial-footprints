@@ -133,7 +133,16 @@
     <script>
         const form = document.querySelector('.additems');
         const items = document.querySelector('.items');
-        const itemList = JSON.parse(localStorage.getItem('items')) || [];
+        function loadItems() {
+            try {
+                const storedItems = JSON.parse(localStorage.getItem('items'));
+                return Array.isArray(storedItems) ? storedItems : [];
+            } catch (error) {
+                localStorage.removeItem('items');
+                return [];
+            }
+        }
+        const itemList = loadItems();
         
         function addItem(e){
             e.preventDefault();
@@ -149,14 +158,18 @@
             
         }
         function addToList(plates=[],placeIntoList){
-              placeIntoList.innerHTML = plates.map((plate,i) => {
-                    return  `
-                    <li class="item">
-                        <input type="checkbox" data-index=${i} ${plate.done? 'checked':''} />
-                        ${plate.text}
-                        </li>
-                    `;
-                }).join('');
+            placeIntoList.replaceChildren(...plates.map((plate,i) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.dataset.index = i;
+                checkbox.checked = Boolean(plate.done);
+
+                listItem.append(checkbox, document.createTextNode(` ${String(plate.text ?? '')}`));
+                return listItem;
+            }));
         }
         function toggleDone(e){
             if(!e.target.matches('input'))return;
